@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#123b32">
+  <title>Simulador massa–mola — Euler-Cromer</title>
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="script.js" defer></script>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">LABORATÓRIO DE FÍSICA · MÉTODOS NUMÉRICOS</p>
+        <h1>Sistema massa–mola</h1>
+        <p class="subtitle">Explore o movimento harmônico e acompanhe como a energia se transforma ao longo do tempo.</p>
+      </div>
+      <span class="method-badge">Método de Euler-Cromer</span>
+    </header>
+
+    <section class="simulator-layout" aria-label="Simulador do sistema massa-mola">
+      <div class="main-column">
+        <section class="card animation-card" aria-labelledby="motion-title">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">MOVIMENTO</p>
+              <h2 id="motion-title">Oscilador horizontal</h2>
+            </div>
+            <span id="status" class="status-pill">Pausado</span>
+          </div>
+          <div class="scene-wrap">
+            <svg id="scene" viewBox="0 0 760 260" role="img" aria-label="Animação de uma massa presa a uma mola horizontal">
+              <defs>
+                <linearGradient id="massGradient" x1="0" x2="1" y1="0" y2="1">
+                  <stop offset="0" stop-color="#32a886"></stop>
+                  <stop offset="1" stop-color="#17634f"></stop>
+                </linearGradient>
+              </defs>
+              <line x1="36" y1="196" x2="724" y2="196" class="ground-line"></line>
+              <rect x="62" y="68" width="18" height="128" rx="3" class="wall"></rect>
+              <g id="spring-group"><path id="spring" class="spring" d=""></path></g>
+              <rect id="mass" x="390" y="131" width="82" height="64" rx="12" class="mass"></rect>
+              <text id="mass-label" x="431" y="169" text-anchor="middle" class="mass-label">m</text>
+              <line x1="431" y1="204" x2="431" y2="216" class="position-tick"></line>
+              <text x="431" y="237" text-anchor="middle" class="axis-label">posição de equilíbrio</text>
+              <text id="position-label" x="431" y="105" text-anchor="middle" class="position-label">x = 0,00 m</text>
+            </svg>
+          </div>
+          <div class="transport-row">
+            <div class="button-group">
+              <button id="start-button" class="button button-primary" type="button">▶ Iniciar</button>
+              <button id="reset-button" class="button button-secondary" type="button">↺ Reiniciar</button>
+            </div>
+            <div class="readout"><span>Tempo</span><strong id="time-value">0,000 s</strong></div>
+            <div class="readout"><span>Velocidade</span><strong id="velocity-value">0,000 m/s</strong></div>
+          </div>
+        </section>
+
+        <section class="card energy-card" aria-labelledby="energy-title">
+          <div class="section-heading energy-heading">
+            <div>
+              <p class="eyebrow">BALANÇO ENERGÉTICO</p>
+              <h2 id="energy-title">Energias e variações</h2>
+            </div>
+            <span class="energy-reference">Referência: energia inicial E₀</span>
+          </div>
+          <p class="chart-help">As barras mostram quanto cada energia mudou em relação ao instante inicial. A linha central representa variação zero.</p>
+          <div class="energy-chart" aria-label="Gráfico das variações de energia">
+            <div class="chart-row" data-energy="elastic">
+              <span class="chart-name"><i class="legend-dot elastic-dot"></i>ΔE Potencial Elástica</span>
+              <div class="bar-track"><span class="zero-line"></span><span class="change-bar"></span></div>
+              <strong class="energy-change">0,000 J</strong>
+            </div>
+            <div class="chart-row" data-energy="kinetic">
+              <span class="chart-name"><i class="legend-dot kinetic-dot"></i>ΔE Cinética</span>
+              <div class="bar-track"><span class="zero-line"></span><span class="change-bar"></span></div>
+              <strong class="energy-change">0,000 J</strong>
+            </div>
+            <div class="chart-row" data-energy="mechanical">
+              <span class="chart-name"><i class="legend-dot mechanical-dot"></i>ΔE Mecânica</span>
+              <div class="bar-track"><span class="zero-line"></span><span class="change-bar"></span></div>
+              <strong class="energy-change">0,000 J</strong>
+            </div>
+          </div>
+          <div class="chart-scale"><span>−<span id="scale-value">100</span>% de E₀</span><span>0</span><span>+<span id="scale-value-right">100</span>% de E₀</span></div>
+          <div class="energy-values">
+            <div class="energy-value elastic-value"><span>Energia potencial elástica</span><strong id="elastic-value">0,0000 J</strong></div>
+            <div class="energy-value kinetic-value"><span>Energia cinética</span><strong id="kinetic-value">0,0000 J</strong></div>
+            <div class="energy-value mechanical-value"><span>Energia mecânica total</span><strong id="mechanical-value">0,0000 J</strong></div>
+          </div>
+          <section class="explanation-box" aria-live="polite">
+            <h3>Explicação do método de Euler-Cromer</h3>
+            <p id="euler-explanation"></p>
+          </section>
+        </section>
+      </div>
+
+      <aside class="card controls-card" aria-labelledby="controls-title">
+        <p class="eyebrow">CONFIGURAÇÃO</p>
+        <h2 id="controls-title">Parâmetros do sistema</h2>
+        <label class="field-label" for="mass-input">Massa <span>m</span></label>
+        <div class="input-unit"><input id="mass-input" type="number" min="0.1" max="20" step="0.1" value="1.0"><span>kg</span></div>
+        <label class="field-label" for="spring-input">Constante elástica <span>k</span></label>
+        <div class="input-unit"><input id="spring-input" type="number" min="0.1" max="500" step="0.5" value="2"><span>N/m</span></div>
+        <label class="field-label" for="displacement-input">Posição inicial <span>x₀</span></label>
+        <div class="input-unit"><input id="displacement-input" type="number" min="-1" max="1" step="0.01" value="0.30"><span>m</span></div>
+        <label class="field-label" for="velocity-input">Velocidade inicial <span>v₀</span></label>
+        <div class="input-unit"><input id="velocity-input" type="number" min="-5" max="5" step="0.1" value="0"><span>m/s</span></div>
+
+        <div class="friction-box">
+          <label class="toggle-label" for="friction-toggle">
+            <span><strong>Considerar atrito</strong><small>Amortecimento viscoso</small></span>
+            <input id="friction-toggle" type="checkbox" role="switch">
+          </label>
+          <label class="field-label friction-field" for="damping-input">Coeficiente de amortecimento <span>b</span></label>
+          <div class="input-unit friction-field"><input id="damping-input" type="number" min="0" max="30" step="0.1" value="0.5" disabled><span>N·s/m</span></div>
+        </div>
+
+        <label class="field-label" for="step-input">Passo de tempo <span>Δt</span></label>
+        <div class="input-unit"><input id="step-input" type="number" min="0.0001" max="0.02" step="0.0001" value="0.002"><span>s</span></div>
+        <p class="hint">Um Δt menor tende a reduzir o erro numérico.</p>
+        <div class="equation-box">
+          <span class="equation-title">Equação do movimento</span>
+          <p id="equation">a = −kx / m</p>
+          <small>Com atrito: a = (−kx − bv) / m</small>
+        </div>
+        <p id="validation-message" class="validation-message" role="alert"></p>
+      </aside>
+    </section>
+    <footer>Modelo 1D · Atrito viscoso proporcional à velocidade · Unidades SI</footer>
+  </main>
+</body>
+</html>
